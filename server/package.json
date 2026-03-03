@@ -1,0 +1,29 @@
+{
+  "name": "server",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "packageManager": "pnpm@10.6.4",
+  "devDependencies": {
+    "@types/node": "^25.3.0",
+    "typescript": "^5.9.3"
+  },
+  "dependencies": {
+    "@hono/node-server": "^1.19.9",
+    "@x402-avm/avm": "^2.2.1",
+    "@x402-avm/core": "^2.2.3",
+    "@x402-avm/extensions": "^2.2.1",
+    "@x402-avm/hono": "^2.2.1",
+    "bazaar": "link:@x402-avm/extensions/bazaar",
+    "dotenv": "^17.3.1",
+    "hono": "^4.12.2",
+    "server": "link:@x402-avm/avm/exact/server"
+  }
+}
