@@ -5,24 +5,20 @@ import algosdk from "algosdk";
 
 config();
 
-const avmPrivateKey = process.env.AVM_PRIVATE_KEY as string;
+const avmMnemonic = process.env.AVM_MNEMONIC as string;
 const baseURL = process.env.RESOURCE_SERVER_URL || "http://localhost:4021";
 const endpointPath = process.env.ENDPOINT_PATH || "/weather";
 const url = `${baseURL}${endpointPath}`;
 
 async function main(): Promise<void> {
-    const secretKey = Buffer.from(avmPrivateKey, "base64");
-    if (secretKey.length !== 64) {
-        throw new Error("AVM_PRIVATE_KEY must be a Base64-encoded 64-byte key");
-    }
-    const address = algosdk.encodeAddress(secretKey.slice(32));
+    const { addr, sk } = algosdk.mnemonicToSecretKey(avmMnemonic);
     const avmSigner = {
-        address,
+        address: addr.toString(),
         signTransactions: async (txns: Uint8Array[], indexesToSign?: number[]) => {
             return txns.map((txn, i) => {
                 if (indexesToSign && !indexesToSign.includes(i)) return null;
                 const decoded = algosdk.decodeUnsignedTransaction(txn);
-                const signed = algosdk.signTransaction(decoded, secretKey);
+                const signed = algosdk.signTransaction(decoded, sk);
                 return signed.blob;
             });
         },
@@ -30,7 +26,7 @@ async function main(): Promise<void> {
 
     const client = new x402Client();
     registerExactAvmScheme(client, { signer: avmSigner });
-    console.info(`AVM signer: ${address}`);
+    console.info(`AVM signer: ${addr}`);
 
     const fetchWithPayment = wrapFetchWithPayment(fetch, client);
 
