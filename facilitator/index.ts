@@ -1,29 +1,34 @@
 import { x402Facilitator } from "@x402-avm/core/facilitator";
-import type {
-    PaymentPayload,
-    PaymentRequirements,
-    SettleResponse,
-    VerifyResponse,
+import {
+    type PaymentPayload,
+    type PaymentRequirements,
+    type SettleResponse,
+    type VerifyResponse,
 } from "@x402-avm/core/types";
 import { DEFAULT_ALGOD_TESTNET } from "@x402-avm/avm";
 import { registerExactAvmScheme } from "@x402-avm/avm/exact/facilitator";
 import algosdk from "algosdk";
 import dotenv from "dotenv";
-import express from "express";
+import express, { type Request, type Response } from "express";
 
 dotenv.config();
 
+// Configuration
 const PORT = process.env.PORT || "4022";
 
+if (!process.env.AVM_MNEMONIC) {
+    console.error("❌ AVM_MNEMONIC environment variable is required");
+    process.exit(1);
+}
 
-const avmMnemonic = process.env.AVM_MNEMONIC as string;
-const { addr, sk } = algosdk.mnemonicToSecretKey(avmMnemonic);
-console.info(`AVM Facilitator account: ${addr}`);
+const { addr, sk } = algosdk.mnemonicToSecretKey(process.env.AVM_MNEMONIC as string);
+const avmAddress = addr.toString();
+console.info(`AVM Facilitator account: ${avmAddress}`);
 
 const algodClient = new algosdk.Algodv2("", DEFAULT_ALGOD_TESTNET, "");
 
 const avmSigner = {
-    getAddresses: () => [addr.toString()] as readonly string[],
+    getAddresses: () => [avmAddress] as readonly string[],
 
     signTransaction: async (txn: Uint8Array, _senderAddress: string) => {
         const decoded = algosdk.decodeUnsignedTransaction(txn);
@@ -80,7 +85,6 @@ registerExactAvmScheme(facilitator, {
     networks: "algorand:SGO1GKSzyE7IEPItTxCByw9x8FmnrCDexi9/cOUJOiI=", // Algorand Testnet
 });
 
-// Initialize Express app
 const app = express();
 app.use(express.json());
 
@@ -90,7 +94,7 @@ app.use(express.json());
  *
  * Note: Payment tracking and bazaar discovery are handled by lifecycle hooks
  */
-app.post("/verify", async (req, res) => {
+app.post("/verify", async (req: Request, res: Response) => {
     try {
         const { paymentPayload, paymentRequirements } = req.body as {
             paymentPayload: PaymentPayload;
@@ -126,7 +130,7 @@ app.post("/verify", async (req, res) => {
  *
  * Note: Verification validation and cleanup are handled by lifecycle hooks
  */
-app.post("/settle", async (req, res) => {
+app.post("/settle", async (req: Request, res: Response) => {
     try {
         const { paymentPayload, paymentRequirements } = req.body;
 

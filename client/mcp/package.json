@@ -1,9 +1,8 @@
 {
-  "name": "facilitator",
+  "name": "mcp",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
-  "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -12,15 +11,7 @@
   "license": "ISC",
   "packageManager": "pnpm@10.6.4",
   "devDependencies": {
-    "@types/express": "^5.0.6",
-    "@types/node": "^25.3.3",
+    "@types/node": "^25.4.0",
     "typescript": "^5.9.3"
-  },
-  "dependencies": {
-    "@x402-avm/avm": "^2.2.1",
-    "@x402-avm/core": "^2.2.3",
-    "algosdk": "^3.5.2",
-    "dotenv": "^17.3.1",
-    "express": "^5.2.1"
   }
 }

@@ -12,8 +12,9 @@ const url = `${baseURL}${endpointPath}`;
 
 async function main(): Promise<void> {
     const { addr, sk } = algosdk.mnemonicToSecretKey(avmMnemonic);
+    const address = addr.toString();
     const avmSigner = {
-        address: addr.toString(),
+        address,
         signTransactions: async (txns: Uint8Array[], indexesToSign?: number[]) => {
             return txns.map((txn, i) => {
                 if (indexesToSign && !indexesToSign.includes(i)) return null;
@@ -26,7 +27,7 @@ async function main(): Promise<void> {
 
     const client = new x402Client();
     registerExactAvmScheme(client, { signer: avmSigner });
-    console.info(`AVM signer: ${addr}`);
+    console.info(`AVM signer: ${address}`);
 
     const fetchWithPayment = wrapFetchWithPayment(fetch, client);
 
