@@ -2,7 +2,6 @@ import { config } from "dotenv";
 import { paymentMiddleware, x402ResourceServer } from "@x402-avm/hono";
 import { ExactAvmScheme } from "@x402-avm/avm/exact/server";
 import { HTTPFacilitatorClient } from "@x402-avm/core/server";
-import { declareDiscoveryExtension } from "@x402-avm/extensions/bazaar";
 import { Hono } from "hono";
 import { serve } from "@hono/node-server";
 config();
@@ -41,18 +40,6 @@ app.use(
                 accepts,
                 description: "Weather data",
                 mimeType: "application/json",
-                extensions: {
-                    ...declareDiscoveryExtension({
-                        input: { city: "San Francisco" },
-                        inputSchema: {
-                            properties: { city: { type: "string", description: "City name" } },
-                            required: ["city"],
-                        },
-                        output: {
-                            example: { report: { weather: "sunny", temperature: 70 } },
-                        },
-                    }),
-                },
             },
         },
         server,
