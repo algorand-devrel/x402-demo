@@ -1,7 +1,9 @@
 import { config } from "dotenv";
 import { x402Client, wrapFetchWithPayment, x402HTTPClient } from "@x402-avm/fetch";
+import { toClientAvmSigner } from "@x402-avm/avm";
 import { registerExactAvmScheme } from "@x402-avm/avm/exact/client";
-import algosdk from "algosdk";
+import { ed25519SigningKeyFromWrappedSecret, type WrappedEd25519Seed } from '@algorandfoundation/algokit-utils/crypto'
+import { seedFromMnemonic } from '@algorandfoundation/algokit-utils/algo25'
 
 config();
 
@@ -11,23 +13,13 @@ const endpointPath = process.env.ENDPOINT_PATH || "/weather";
 const url = `${baseURL}${endpointPath}`;
 
 async function main(): Promise<void> {
-    const { addr, sk } = algosdk.mnemonicToSecretKey(avmMnemonic);
-    const address = addr.toString();
-    const avmSigner = {
-        address,
-        signTransactions: async (txns: Uint8Array[], indexesToSign?: number[]) => {
-            return txns.map((txn, i) => {
-                if (indexesToSign && !indexesToSign.includes(i)) return null;
-                const decoded = algosdk.decodeUnsignedTransaction(txn);
-                const signed = algosdk.signTransaction(decoded, sk);
-                return signed.blob;
-            });
-        },
-    };
+
+    const secretKey = await getSecretKeyFromMnemonic(avmMnemonic);
+    const avmSigner = toClientAvmSigner(secretKey);
 
     const client = new x402Client();
     registerExactAvmScheme(client, { signer: avmSigner });
-    console.info(`AVM signer: ${address}`);
+    console.info(`AVM signer: ${avmSigner.address}`);
 
     const fetchWithPayment = wrapFetchWithPayment(fetch, client);
 
@@ -46,7 +38,22 @@ async function main(): Promise<void> {
     }
 }
 
+async function getSecretKeyFromMnemonic(mnemonic: string): Promise<string> {
+    const seed = seedFromMnemonic(mnemonic);
+    const seedCopy = new Uint8Array(seed);
+    const wrappedSeed: WrappedEd25519Seed = {
+        unwrapEd25519Seed: async () => seed,
+        wrapEd25519Seed: async () => { },
+    }
+    const wrappedSecret = await ed25519SigningKeyFromWrappedSecret(wrappedSeed)
+    return Buffer.concat([
+        Buffer.from(seedCopy),
+        Buffer.from(wrappedSecret.ed25519Pubkey),
+    ]).toString('base64');
+}
+
 main().catch(error => {
     console.error(error?.response?.data?.error ?? error);
     process.exit(1);
 });
+

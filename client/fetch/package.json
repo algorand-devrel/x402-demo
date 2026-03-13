@@ -16,10 +16,9 @@
     "typescript": "^5.9.3"
   },
   "dependencies": {
-    "@x402-avm/avm": "^2.2.1",
-    "@x402-avm/fetch": "^2.2.1",
-    "algosdk": "^3.5.2",
-    "client": "link:@x402-avm/avm/exact/client",
+    "@algorandfoundation/algokit-utils": "10.0.0-alpha.42",
+    "@x402-avm/avm": "^2.6.1",
+    "@x402-avm/fetch": "^2.6.1",
     "dotenv": "^17.3.1"
   }
 }
