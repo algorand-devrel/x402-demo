@@ -5,60 +5,28 @@ import {
     type SettleResponse,
     type VerifyResponse,
 } from "@x402-avm/core/types";
-import { DEFAULT_ALGOD_TESTNET } from "@x402-avm/avm";
-import { registerExactAvmScheme } from "@x402-avm/avm/exact/facilitator";
-import algosdk from "algosdk";
-import dotenv from "dotenv";
-import express, { type Request, type Response } from "express";
+import { toFacilitatorAvmSigner } from "@x402-avm/avm";
+import { ExactAvmScheme } from "@x402-avm/avm/exact/facilitator";
+import { config } from "dotenv";
+import express from "express";
+import { seedFromMnemonic } from "@algorandfoundation/algokit-utils/algo25";
+import { ed25519SigningKeyFromWrappedSecret, type WrappedEd25519Seed } from "@algorandfoundation/algokit-utils/crypto";
 
-dotenv.config();
+config();
 
 // Configuration
 const PORT = process.env.PORT || "4022";
 
+// Validate required environment variables
 if (!process.env.AVM_MNEMONIC) {
     console.error("❌ AVM_MNEMONIC environment variable is required");
     process.exit(1);
 }
 
-const { addr, sk } = algosdk.mnemonicToSecretKey(process.env.AVM_MNEMONIC as string);
-const avmAddress = addr.toString();
-console.info(`AVM Facilitator account: ${avmAddress}`);
-
-const algodClient = new algosdk.Algodv2("", DEFAULT_ALGOD_TESTNET, "");
-
-const avmSigner = {
-    getAddresses: () => [avmAddress] as readonly string[],
-
-    signTransaction: async (txn: Uint8Array, _senderAddress: string) => {
-        const decoded = algosdk.decodeUnsignedTransaction(txn);
-        const signed = algosdk.signTransaction(decoded, sk);
-        return signed.blob;
-    },
-
-    getAlgodClient: (_network: string) => algodClient,
-
-    simulateTransactions: async (txns: Uint8Array[], _network: string) => {
-        const request = new algosdk.modelsv2.SimulateRequest({
-            txnGroups: [
-                new algosdk.modelsv2.SimulateRequestTransactionGroup({
-                    txns: txns.map(txn => algosdk.decodeSignedTransaction(txn)),
-                }),
-            ],
-            allowUnnamedResources: true,
-        });
-        return await algodClient.simulateTransactions(request).do();
-    },
-
-    sendTransactions: async (signedTxns: Uint8Array[], _network: string) => {
-        const response = await algodClient.sendRawTransaction(signedTxns).do();
-        return response.txid;
-    },
-
-    waitForConfirmation: async (txId: string, _network: string, waitRounds: number = 4) => {
-        return await algosdk.waitForConfirmation(algodClient, txId, waitRounds);
-    },
-};
+// Initialize the AVM signer from private key
+const secretKey = await getSecretKeyFromMnemonic(process.env.AVM_MNEMONIC as string);
+const avmSigner = toFacilitatorAvmSigner(secretKey);
+console.info(`AVM Facilitator account: ${avmSigner.getAddresses()[0]}`);
 
 const facilitator = new x402Facilitator()
     .onBeforeVerify(async (context) => {
@@ -80,11 +48,10 @@ const facilitator = new x402Facilitator()
         console.log("Settle failure", context);
     });
 
-registerExactAvmScheme(facilitator, {
-    signer: avmSigner,
-    networks: "algorand:SGO1GKSzyE7IEPItTxCByw9x8FmnrCDexi9/cOUJOiI=", // Algorand Testnet
-});
+// Register EVM, SVM, and AVM schemes
+facilitator.register("algorand:SGO1GKSzyE7IEPItTxCByw9x8FmnrCDexi9/cOUJOiI=", new ExactAvmScheme(avmSigner)); // Algorand Testnet
 
+// Initialize Express app
 const app = express();
 app.use(express.json());
 
@@ -94,7 +61,7 @@ app.use(express.json());
  *
  * Note: Payment tracking and bazaar discovery are handled by lifecycle hooks
  */
-app.post("/verify", async (req: Request, res: Response) => {
+app.post("/verify", async (req, res) => {
     try {
         const { paymentPayload, paymentRequirements } = req.body as {
             paymentPayload: PaymentPayload;
@@ -130,7 +97,7 @@ app.post("/verify", async (req: Request, res: Response) => {
  *
  * Note: Verification validation and cleanup are handled by lifecycle hooks
  */
-app.post("/settle", async (req: Request, res: Response) => {
+app.post("/settle", async (req, res) => {
     try {
         const { paymentPayload, paymentRequirements } = req.body;
 
@@ -190,5 +157,21 @@ app.get("/supported", async (req, res) => {
 
 // Start the server
 app.listen(parseInt(PORT), () => {
-    console.log("Facilitator listening");
+    console.log(`🚀 Facilitator listening on http://localhost:${PORT}`);
+    console.log();
 });
+
+
+async function getSecretKeyFromMnemonic(mnemonic: string): Promise<string> {
+    const seed = seedFromMnemonic(mnemonic);
+    const seedCopy = new Uint8Array(seed);
+    const wrappedSeed: WrappedEd25519Seed = {
+        unwrapEd25519Seed: async () => seed,
+        wrapEd25519Seed: async () => { },
+    }
+    const wrappedSecret = await ed25519SigningKeyFromWrappedSecret(wrappedSeed)
+    return Buffer.concat([
+        Buffer.from(seedCopy),
+        Buffer.from(wrappedSecret.ed25519Pubkey),
+    ]).toString('base64');
+}

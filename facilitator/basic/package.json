@@ -1,5 +1,5 @@
 {
-  "name": "facilitator",
+  "name": "basic",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -13,13 +13,13 @@
   "packageManager": "pnpm@10.6.4",
   "devDependencies": {
     "@types/express": "^5.0.6",
-    "@types/node": "^25.3.3",
+    "@types/node": "^25.5.0",
     "typescript": "^5.9.3"
   },
   "dependencies": {
-    "@x402-avm/avm": "^2.2.1",
-    "@x402-avm/core": "^2.2.3",
-    "algosdk": "^3.5.2",
+    "@algorandfoundation/algokit-utils": "10.0.0-alpha.42",
+    "@x402-avm/avm": "^2.6.1",
+    "@x402-avm/core": "^2.6.1",
     "dotenv": "^17.3.1",
     "express": "^5.2.1"
   }
