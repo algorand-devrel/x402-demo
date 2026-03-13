@@ -1,10 +1,19 @@
+/**
+ * MCP Server with x402 Payment Integration
+ *
+ * This example demonstrates how to create an MCP server that can make
+ * paid API requests using the x402 protocol with EVM, SVM, and AVM support.
+ */
+
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import axios from "axios";
 import { config } from "dotenv";
 import { x402Client, wrapAxiosWithPayment } from "@x402-avm/axios";
+import { toClientAvmSigner } from "@x402-avm/avm";
 import { registerExactAvmScheme } from "@x402-avm/avm/exact/client";
-import algosdk from "algosdk";
+import { seedFromMnemonic } from "@algorandfoundation/algokit-utils/algo25";
+import { ed25519SigningKeyFromWrappedSecret, type WrappedEd25519Seed } from "@algorandfoundation/algokit-utils/crypto";
 
 config();
 
@@ -12,8 +21,8 @@ const avmMnemonic = process.env.AVM_MNEMONIC as string;
 const baseURL = process.env.RESOURCE_SERVER_URL || "http://localhost:4021";
 const endpointPath = process.env.ENDPOINT_PATH || "/weather";
 
-if (!evmPrivateKey || !svmPrivateKey || !avmPrivateKey) {
-    throw new Error("EVM_PRIVATE_KEY, SVM_PRIVATE_KEY, and AVM_PRIVATE_KEY must all be provided");
+if (!avmMnemonic) {
+    throw new Error("AVM_MNEMONIC must be provided");
 }
 
 /**
@@ -24,28 +33,8 @@ if (!evmPrivateKey || !svmPrivateKey || !avmPrivateKey) {
 async function createClient() {
     const client = new x402Client();
 
-    const evmSigner = privateKeyToAccount(evmPrivateKey);
-    registerExactEvmScheme(client, { signer: evmSigner });
-
-    const svmSigner = await createKeyPairSignerFromBytes(base58.decode(svmPrivateKey));
-    registerExactSvmScheme(client, { signer: svmSigner });
-
-    const secretKey = Buffer.from(avmPrivateKey, "base64");
-    if (secretKey.length !== 64) {
-        throw new Error("AVM_PRIVATE_KEY must be a Base64-encoded 64-byte key");
-    }
-    const address = algosdk.encodeAddress(secretKey.slice(32));
-    const avmSigner = {
-        address,
-        signTransactions: async (txns: Uint8Array[], indexesToSign?: number[]) => {
-            return txns.map((txn, i) => {
-                if (indexesToSign && !indexesToSign.includes(i)) return null;
-                const decoded = algosdk.decodeUnsignedTransaction(txn);
-                const signed = algosdk.signTransaction(decoded, secretKey);
-                return signed.blob;
-            });
-        },
-    };
+    const secretKey = await getSecretKeyFromMnemonic(avmMnemonic);
+    const avmSigner = toClientAvmSigner(secretKey);
     registerExactAvmScheme(client, { signer: avmSigner });
 
     return wrapAxiosWithPayment(axios.create({ baseURL }), client);
@@ -78,6 +67,20 @@ async function main() {
 
     const transport = new StdioServerTransport();
     await server.connect(transport);
+}
+
+async function getSecretKeyFromMnemonic(mnemonic: string): Promise<string> {
+    const seed = seedFromMnemonic(mnemonic);
+    const seedCopy = new Uint8Array(seed);
+    const wrappedSeed: WrappedEd25519Seed = {
+        unwrapEd25519Seed: async () => seed,
+        wrapEd25519Seed: async () => { },
+    }
+    const wrappedSecret = await ed25519SigningKeyFromWrappedSecret(wrappedSeed)
+    return Buffer.concat([
+        Buffer.from(seedCopy),
+        Buffer.from(wrappedSecret.ed25519Pubkey),
+    ]).toString('base64');
 }
 
 main().catch(error => {
