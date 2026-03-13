@@ -5,9 +5,11 @@ import {
     decodePaymentResponseHeader,
     encodePaymentSignatureHeader,
 } from "@x402-avm/core/http";
+import { toClientAvmSigner } from "@x402-avm/avm";
 import { ExactAvmScheme } from "@x402-avm/avm/exact/client";
-import algosdk from "algosdk";
 import type { PaymentRequirements } from "@x402-avm/core/types";
+import { ed25519SigningKeyFromWrappedSecret, type WrappedEd25519Seed } from "@algorandfoundation/algokit-utils/crypto";
+import { seedFromMnemonic } from "@algorandfoundation/algokit-utils/algo25";
 
 config();
 
@@ -15,6 +17,12 @@ const avmMnemonic = process.env.AVM_MNEMONIC as string;
 const baseURL = process.env.SERVER_URL || "http://localhost:4021";
 const url = `${baseURL}/weather`;
 
+/**
+ * Makes a request with x402 payment handling.
+ *
+ * @param client - The x402 client instance to use for payments
+ * @param url - The URL to request
+ */
 async function makeRequestWithPayment(client: x402Client, url: string): Promise<void> {
     console.log(`\n🌐 Making initial request to: ${url}\n`);
 
@@ -74,27 +82,19 @@ async function makeRequestWithPayment(client: x402Client, url: string): Promise<
     }
 }
 
+/**
+ * Main entry point demonstrating custom x402 client usage.
+ */
 async function main(): Promise<void> {
     console.log("\n🔧 Custom x402 Client (v2 Protocol)\n");
-    if (!avmMnemonic) {
-        console.error("❌ AVM_MNEMONIC environment variable is required");
-        process.exit(1);
-    }
-    const { addr, sk } = algosdk.mnemonicToSecretKey(avmMnemonic);
-    const address = addr.toString();
-    const avmSigner = {
-        address,
-        signTransactions: async (txns: Uint8Array[], indexesToSign?: number[]) => {
-            return txns.map((txn, i) => {
-                if (indexesToSign && !indexesToSign.includes(i)) return null;
-                const decoded = algosdk.decodeUnsignedTransaction(txn);
-                const signed = algosdk.signTransaction(decoded, sk);
-                return signed.blob;
-            });
-        },
-    };
-    console.info(`AVM signer: ${address}`);
 
+    const secretKey = await getSecretKeyFromMnemonic(avmMnemonic);
+    const avmSigner = toClientAvmSigner(secretKey);
+    console.info(`AVM signer: ${avmSigner.address}`);
+
+    // Custom selector - pick which payment option to use
+    // This selects the second payment option (Solana)
+    // Create your own logic here to select preferred payment option
     const selectPayment = (_version: number, requirements: PaymentRequirements[]) => {
         const selected = requirements[0];
         console.log(`🎯 Selected: ${selected.network} / ${selected.scheme}`);
@@ -108,6 +108,20 @@ async function main(): Promise<void> {
 
     await makeRequestWithPayment(client, url);
     console.log("\n🎉 Done!");
+}
+
+async function getSecretKeyFromMnemonic(mnemonic: string): Promise<string> {
+    const seed = seedFromMnemonic(mnemonic);
+    const seedCopy = new Uint8Array(seed);
+    const wrappedSeed: WrappedEd25519Seed = {
+        unwrapEd25519Seed: async () => seed,
+        wrapEd25519Seed: async () => { },
+    }
+    const wrappedSecret = await ed25519SigningKeyFromWrappedSecret(wrappedSeed)
+    return Buffer.concat([
+        Buffer.from(seedCopy),
+        Buffer.from(wrappedSecret.ed25519Pubkey),
+    ]).toString('base64');
 }
 
 main().catch(error => {
