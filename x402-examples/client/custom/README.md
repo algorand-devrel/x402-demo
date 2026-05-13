@@ -16,7 +16,7 @@
 ### Installation
 
 ```bash
-npm install
+pnpm install
 ```
 
 ### Configuration
@@ -25,13 +25,14 @@ Create a `.env` file in this directory with:
 
 ```env
 AVM_MNEMONIC=your_algorand_mnemonic_here
-SERVER_URL=http://localhost:4021
+RESOURCE_SERVER_URL=https://x402.goplausible.xyz/examples
+ENDPOINT_PATH=/weather
 ```
 
 ### Run
 
 ```bash
-npm start
+pnpm start
 ```
 
 ## How It Works

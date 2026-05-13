@@ -14,8 +14,9 @@ import { seedFromMnemonic } from "@algorandfoundation/algokit-utils/algo25";
 config();
 
 const avmMnemonic = process.env.AVM_MNEMONIC as string;
-const baseURL = process.env.SERVER_URL || "http://localhost:4021";
-const url = `${baseURL}/weather`;
+const baseURL = process.env.RESOURCE_SERVER_URL || "https://x402.goplausible.xyz/examples";
+const endpointPath = process.env.ENDPOINT_PATH || "/weather";
+const url = `${baseURL}${endpointPath}`;
 
 /**
  * Demonstrates the full x402 protocol flow step-by-step.

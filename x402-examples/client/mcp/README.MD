@@ -23,14 +23,14 @@ This unlocks new possibilities where AI systems can directly participate in the 
 ### 1. Installation & Configuration
 
 ```bash
-npm install
+pnpm install
 ```
 
 Create a `.env` file in this directory with:
 
 ```env
 AVM_MNEMONIC=your_algorand_mnemonic_here
-RESOURCE_SERVER_URL=http://localhost:4021
+RESOURCE_SERVER_URL=https://x402.goplausible.xyz/examples
 ENDPOINT_PATH=/weather
 ```
 
@@ -40,8 +40,8 @@ In a separate terminal:
 
 ```bash
 cd ../server/hono
-npm install
-npm start
+pnpm install
+pnpm start
 ```
 
 The server is now listening on `http://localhost:4021/weather`

@@ -54,7 +54,7 @@ app.use(
 1. Install dependencies:
 
 ```bash
-npm install
+pnpm install
 ```
 
 2. Create `.env`:
@@ -68,7 +68,7 @@ PORT=4021
 3. Start the server:
 
 ```bash
-npm start
+pnpm start
 ```
 
 Runs at `http://localhost:4021`.

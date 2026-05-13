@@ -9,11 +9,20 @@ This folder follows the [x402 on Algorand tutorial](https://dev.algorand.co/reso
 
 ## Quick Start
 
+
 ### 1. Prerequisites
 
 - Node.js LTS or newer with npm
 - Algorand TestNet account with ALGO and USDC
 - See [Setup section](https://dev.algorand.co/resources/x402-on-algorand/#setup) in the tutorial
+
+**Note:** On first run, you may need to approve esbuild for pnpm. If you see a build error, run:
+
+```bash
+pnpm approve-builds
+```
+
+as described in the x402 dev portal tutorial above.
 
 ### 2. Test with Hosted Services (Simplest)
 
@@ -21,8 +30,8 @@ This folder follows the [x402 on Algorand tutorial](https://dev.algorand.co/reso
 2. Run the client:
    ```bash
    cd client
-   npm install
-   npm start
+   pnpm install
+   pnpm start
    ```
 
 The client will connect to the hosted resource server and facilitator automatically.
@@ -32,8 +41,8 @@ The client will connect to the hosted resource server and facilitator automatica
 #### Start the server:
 ```bash
 cd server
-npm install
-npm start
+pnpm install
+pnpm start
 ```
 
 #### In client/index.ts, uncomment the local URL:
@@ -45,7 +54,7 @@ const url = 'http://localhost:4021/weather';
 #### Start the client:
 ```bash
 cd client
-npm start
+pnpm start
 ```
 
 ### 4. Self-Hosted Facilitator (Advanced)

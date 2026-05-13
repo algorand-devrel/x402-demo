@@ -50,22 +50,22 @@ The truth machine. Verifies payment signatures, submits transactions to Algorand
 1. **Start the server** (in one terminal):
    ```bash
    cd server/hono
-   npm install
-   npm start
+   pnpm install
+   pnpm start
    ```
 
 2. **Run your client** (in another terminal):
    ```bash
    cd client/fetch  # or axios, custom, advanced, mcp
-   npm install
-   npm start
+   pnpm install
+   pnpm start
    ```
 
 3. **Optional: Run the Facilitator** (in a third terminal):
    ```bash
    cd facilitator/basic
-   npm install
-   npm start
+   pnpm install
+   pnpm start
    ```
 
 **Important:** Make sure your client and server are pointing to the correct endpoints in their `.env` files, or hardcoded in.

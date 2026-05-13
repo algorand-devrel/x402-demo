@@ -59,7 +59,7 @@ Store `AVM_MNEMONIC` securely.
 1. Install dependencies:
 
 ```bash
-npm install
+pnpm install
 ```
 
 2. Create `.env`:
@@ -72,7 +72,7 @@ PORT=4022
 3. Start the facilitator:
 
 ```bash
-npm start
+pnpm start
 ```
 
 Runs at `http://localhost:4022`.

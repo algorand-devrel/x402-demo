@@ -12,7 +12,7 @@ config();
 const avmMnemonic = process.env.AVM_MNEMONIC as string;
 
 // Use the hosted x402 resource server
-const url = 'https://x402.goplausible.xyz/examples/weather';
+ const url = 'https://x402.goplausible.xyz/examples/weather';
 
 // Optional: To test with your local server, uncomment the line below and comment out the hosted URL above
 // const url = 'http://localhost:4021/weather';

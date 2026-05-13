@@ -21,7 +21,7 @@
 ### Installation
 
 ```bash
-npm install
+pnpm install
 ```
 
 ### Configuration
@@ -30,7 +30,7 @@ Create a `.env` file in this directory with:
 
 ```env
 AVM_MNEMONIC=your_algorand_mnemonic_here
-RESOURCE_SERVER_URL=http://localhost:4021
+RESOURCE_SERVER_URL=https://x402.goplausible.xyz/examples
 ENDPOINT_PATH=/weather
 ```
 
@@ -40,13 +40,13 @@ Run a specific pattern:
 
 ```bash
 # Builder Pattern - Register multiple networks with specific signers
-npm start -- builder-pattern
+pnpm start -- builder-pattern
 
 # Hooks Pattern - Observe payment lifecycle events
-npm start -- hooks
+pnpm start -- hooks
 
 # Preferred Network - Implement custom network selection logic
-npm start -- preferred-network
+pnpm start -- preferred-network
 ```
 
 ## Advanced Features

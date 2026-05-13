@@ -5,8 +5,9 @@
   "main": "index.ts",
   "type": "module",
   "scripts": {
-    "start": "npx tsx index.ts"
+    "start": "tsx index.ts"
   },
+  "packageManager": "pnpm@10.6.4",
   "dependencies": {
     "@x402/core": "^2.11.0",
     "@x402/avm": "^2.11.0",
