@@ -1,0 +1,28 @@
+{
+  "name": "axios",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "npx tsx index.ts",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "packageManager": "pnpm@10.6.4",
+  "devDependencies": {
+    "@types/node": "^25.5.0",
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3"
+  },
+  "dependencies": {
+    "@algorandfoundation/algokit-utils": "10.0.0-alpha.42",
+    "@x402/avm": "^2.11.0",
+    "@x402/axios": "^2.11.0",
+    "@x402/core": "^2.11.0",
+    "axios": "^1.13.6",
+    "dotenv": "^17.3.1"
+  }
+}
