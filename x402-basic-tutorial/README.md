@@ -12,7 +12,7 @@ This folder follows the [x402 on Algorand tutorial](https://dev.algorand.co/reso
 
 ### 1. Prerequisites
 
-- Node.js LTS or newer with npm
+- Node.js LTS or newer with pnpm
 - Algorand TestNet account with ALGO and USDC
 - See [Setup section](https://dev.algorand.co/resources/x402-on-algorand/#setup) in the tutorial
 
