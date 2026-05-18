@@ -4,6 +4,7 @@ import { ExactAvmScheme } from "@x402/avm/exact/server";
 import { HTTPFacilitatorClient } from "@x402/core/server";
 import { Hono } from "hono";
 import { serve } from "@hono/node-server";
+
 config();
 
 const avmAddress = process.env.AVM_ADDRESS;
@@ -17,6 +18,8 @@ if (!facilitatorUrl) {
     console.error("❌ FACILITATOR_URL environment variable is required");
     process.exit(1);
 }
+
+const port = Number(process.env.PORT ?? 4021);
 const facilitatorClient = new HTTPFacilitatorClient({ url: facilitatorUrl });
 
 const accepts = [
@@ -57,7 +60,7 @@ app.get("/weather", c => {
 
 serve({
     fetch: app.fetch,
-    port: 4021,
+    port,
 });
 
-console.log(`Server listening at http://localhost:4021`);
+console.log(`Server listening at http://localhost:${port}`);

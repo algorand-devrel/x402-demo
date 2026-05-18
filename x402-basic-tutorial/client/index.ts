@@ -9,10 +9,16 @@ import { seedFromMnemonic } from '@algorandfoundation/algokit-utils/algo25';
 
 config();
 
-const avmMnemonic = process.env.AVM_MNEMONIC as string;
+const avmMnemonic = process.env.AVM_MNEMONIC;
+
+if (!avmMnemonic) {
+  throw new Error(
+    'Missing AVM_MNEMONIC environment variable. Please add it to your .env file.',
+  );
+}
 
 // Use the hosted x402 resource server
- const url = 'https://x402.goplausible.xyz/examples/weather';
+const url = 'https://x402.goplausible.xyz/examples/weather';
 
 // Optional: To test with your local server, uncomment the line below and comment out the hosted URL above
 // const url = 'http://localhost:4021/weather';
@@ -44,7 +50,7 @@ async function main(): Promise<void> {
 
     // Parse the response body
     const responseBody = await response.json();
-    
+
     // Extract first city from hosted response or local weather
     let weatherData;
     if (responseBody.forecast) {
@@ -55,14 +61,14 @@ async function main(): Promise<void> {
     } else {
       weatherData = responseBody;
     }
-    
+
     console.log('\n✅ Resource received:', JSON.stringify(weatherData, null, 2));
   } else {
     console.log(`\nNo payment settled (response status: ${response.status})`);
   }
 }
 
-// Build the base64-encoded signing key that x402-avm expects.
+// Build the base64-encoded signing key used by @x402/avm.
 // The format is the 32-byte Ed25519 seed concatenated with the 32-byte public key.
 async function getSecretKeyFromMnemonic(avmMnemonic: string): Promise<string> {
   const seed = seedFromMnemonic(avmMnemonic);

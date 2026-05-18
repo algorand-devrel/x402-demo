@@ -1,7 +1,7 @@
 {
   "mcpServers": {
     "x402": {
-      "command": "npm",
+      "command": "pnpm",
       "args": ["start"],
       "cwd": "/REPLACE_WITH_FULL_PATH_TO_x402-examples/client/mcp"
     }

@@ -97,21 +97,21 @@ Start each service in separate terminals:
 
 ```bash
 cd facilitator/basic
-npm start
+pnpm start
 ```
 
 2. Resource server
 
 ```bash
 cd server/hono
-npm start
+pnpm start
 ```
 
 3. Example client
 
 ```bash
 cd client/fetch
-npm start
+pnpm start
 ```
 
 Expected flow: client gets `402`, creates payment, facilitator verifies and settles on Algorand, server returns the protected resource.
