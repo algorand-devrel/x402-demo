@@ -1,0 +1,66 @@
+import { config } from "dotenv";
+import { paymentMiddleware, x402ResourceServer } from "@x402/hono";
+import { ExactAvmScheme } from "@x402/avm/exact/server";
+import { HTTPFacilitatorClient } from "@x402/core/server";
+import { Hono } from "hono";
+import { serve } from "@hono/node-server";
+
+config();
+
+const avmAddress = process.env.AVM_ADDRESS;
+if (!avmAddress) {
+    console.error("Missing required environment variables");
+    process.exit(1);
+}
+
+const facilitatorUrl = process.env.FACILITATOR_URL;
+if (!facilitatorUrl) {
+    console.error("❌ FACILITATOR_URL environment variable is required");
+    process.exit(1);
+}
+
+const port = Number(process.env.PORT ?? 4021);
+const facilitatorClient = new HTTPFacilitatorClient({ url: facilitatorUrl });
+
+const accepts = [
+    {
+        scheme: "exact",
+        price: "$0.005",
+        network: "algorand:SGO1GKSzyE7IEPItTxCByw9x8FmnrCDexi9/cOUJOiI=" as const,
+        payTo: avmAddress,
+    },
+];
+
+const server = new x402ResourceServer(facilitatorClient)
+    .register("algorand:SGO1GKSzyE7IEPItTxCByw9x8FmnrCDexi9/cOUJOiI=", new ExactAvmScheme());
+
+const app = new Hono();
+
+app.use(
+    paymentMiddleware(
+        {
+            "GET /weather": {
+                accepts,
+                description: "Weather data",
+                mimeType: "application/json",
+            },
+        },
+        server,
+    ),
+);
+
+app.get("/weather", c => {
+    return c.json({
+        report: {
+            weather: "sunny",
+            temperature: 70,
+        },
+    });
+});
+
+serve({
+    fetch: app.fetch,
+    port,
+});
+
+console.log(`Server listening at http://localhost:${port}`);

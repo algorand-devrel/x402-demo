@@ -1,0 +1,24 @@
+{
+  "name": "x402-server",
+  "version": "1.0.0",
+  "description": "x402 resource server tutorial",
+  "main": "index.ts",
+  "type": "module",
+  "scripts": {
+    "start": "tsx index.ts"
+  },
+  "packageManager": "pnpm@10.6.4",
+  "dependencies": {
+    "@x402/core": "^2.11.0",
+    "@x402/avm": "^2.11.0",
+    "@x402/hono": "^2.11.0",
+    "hono": "^4.1.0",
+    "@hono/node-server": "^1.11.0",
+    "dotenv": "^16.4.5"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.0",
+    "@types/node": "^20.11.0",
+    "tsx": "^4.7.0"
+  }
+}
